@@ -2,11 +2,16 @@ package connectors
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/guiln/boilerplate-cli/src/models"
 	"golang.org/x/oauth2"
+)
+
+const (
+	folderContentType            string = "dir"
+	fileContentType              string = "file"
+	boilerplateIndicatorFileName string = ".boilerplate" //if folder contains this file in the root means that it is a boilerplate container folder
 )
 
 type GithubConnector struct {
@@ -29,16 +34,46 @@ func NewGithubConnector(options *GithubConnectorOptions) *GithubConnector {
 }
 
 func (gc *GithubConnector) GetBoilerplates() (*models.BoilerplateRepo, *models.BoilerplateError) {
-	_, dirContent, _, err := gc.client.Repositories.GetContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, "/", &github.RepositoryContentGetOptions{})
+	rootFolder, err := gc.traverseDirectory("/")
 	if err != nil {
-		return nil, &models.BoilerplateError{Message: "error occured during fetch repo on github", InnerError: err}
+		return nil, err
 	}
 
-	for _, dir := range dirContent {
-		fmt.Printf("Dir Content: \n%v", dir)
+	boilerplateRepo := models.NewBoilerplateRepo(rootFolder)
+
+	return boilerplateRepo, nil
+}
+
+func (gc *GithubConnector) traverseDirectory(dirName string) (*models.BoilerplateFolder, *models.BoilerplateError) {
+	_, dirContent, _, err := gc.client.Repositories.GetContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, dirName, &github.RepositoryContentGetOptions{})
+	if err != nil {
+		return nil, models.CreateBoilerplateErrorFromError(err, "error occured when traversing repo on github")
 	}
 
-	return &models.BoilerplateRepo{}, nil
+	currentFolder := models.NewBoilerplateFolder(dirName, false)
+	var childFoldersPathToTraverse []string
+
+	for _, content := range dirContent {
+		contentType := content.GetType()
+		if contentType == fileContentType {
+			if content.GetName() == boilerplateIndicatorFileName {
+				currentFolder.SetIsContainer(true)
+				return currentFolder, nil
+			}
+		} else if contentType == folderContentType {
+			childFoldersPathToTraverse = append(childFoldersPathToTraverse, content.GetPath())
+		}
+	}
+
+	for _, childPath := range childFoldersPathToTraverse {
+		childRepo, berror := gc.traverseDirectory(childPath)
+		if err != nil {
+			return nil, berror
+		}
+		currentFolder.AddChild(childRepo)
+	}
+
+	return currentFolder, nil
 }
 
 func (gc *GithubConnector) initialize() {
