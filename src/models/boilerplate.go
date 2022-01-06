@@ -1,7 +1,10 @@
 package models
 
+import "strings"
+
+// BoilerplateRepo holds the pointer to templates root folder
 type BoilerplateRepo struct {
-	RootBoilerplateFolder *BoilerplateFolder
+	RootBoilerplateFolder *BoilerplateFolder `yaml:"templates"`
 }
 
 // NewBoilerplateRepo has the same effect as creating directly through &BoilerplateRepo{}
@@ -13,6 +16,7 @@ func NewBoilerplateRepo(rootFolder *BoilerplateFolder) *BoilerplateRepo {
 	return &BoilerplateRepo{RootBoilerplateFolder: rootFolder}
 }
 
+// Holds the structure and info of a template folder with nested
 type BoilerplateFolder struct {
 	isContainerFolder       bool
 	isRootFolder            bool
@@ -22,6 +26,10 @@ type BoilerplateFolder struct {
 
 func NewBoilerplateFolder(folderPath string, isContainer bool) *BoilerplateFolder {
 	return &BoilerplateFolder{path: folderPath, isContainerFolder: isContainer, isRootFolder: false}
+}
+
+func (bfolder *BoilerplateFolder) Marshal() (string, *BoilerplateError) {
+	return printTree(bfolder, 0), nil
 }
 
 func (bFolder *BoilerplateFolder) GetPath() string {
@@ -46,4 +54,16 @@ func (bFolder *BoilerplateFolder) IsContainer() bool {
 
 func (bFolder *BoilerplateFolder) IsRoot() bool {
 	return bFolder.isRootFolder
+}
+
+func printTree(folder *BoilerplateFolder, level int) string {
+	tree := strings.Repeat(" ", level) + "|" + "\n"
+	tree += strings.Repeat("-", level) + folder.GetPath()
+
+	for _, child := range folder.childBoilerplateFolders {
+		tree += "\n"
+		tree += printTree(child, level+1)
+	}
+
+	return tree
 }
