@@ -12,15 +12,16 @@ func Test_GivenIHaveAFolderStructureInBoilerplateFolder_WhenICallMarshalFunction
 
 	marshalledRoot, err := someBoilerplateRepo.RootBoilerplateFolder.Marshal()
 
+	expected := "TEMPLATES\n   node\n      rest-api\n   go\n      rest-api\n      cli"
 	assert.Nil(t, err)
-	assert.Contains(t, marshalledRoot, "node/rest-api")
+	assert.Equal(t, expected, marshalledRoot)
 
 	fmt.Println(marshalledRoot)
 }
 
 func getBoilerplateRepo() *BoilerplateRepo {
 
-	rootFolder := NewBoilerplateFolder("", false)
+	rootFolder := NewBoilerplateFolder("TEMPLATES", false)
 	rootFolder.AddChild(&BoilerplateFolder{
 		isContainerFolder: false,
 		isRootFolder:      false,

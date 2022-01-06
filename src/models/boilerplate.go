@@ -1,6 +1,8 @@
 package models
 
-import "strings"
+import (
+	"strings"
+)
 
 // BoilerplateRepo holds the pointer to templates root folder
 type BoilerplateRepo struct {
@@ -57,8 +59,8 @@ func (bFolder *BoilerplateFolder) IsRoot() bool {
 }
 
 func printTree(folder *BoilerplateFolder, level int) string {
-	tree := strings.Repeat(" ", level) + "|" + "\n"
-	tree += strings.Repeat("-", level) + folder.GetPath()
+	splitPath := strings.Split(folder.GetPath(), "/")
+	tree := strings.Repeat(" ", level*3) + splitPath[len(splitPath)-1]
 
 	for _, child := range folder.childBoilerplateFolders {
 		tree += "\n"
