@@ -18,4 +18,11 @@ tfetcher sync
 tfetcher list 
 // Fetch and download template in current repo
 tfetcher fetch [path to template] 
-``` 
+```  
+
+## How to configure:
+
+```go
+// The git token will be encrypted and stored locally in ~/.template.fetcher.config file  
+tfetcher config --repo="[your repo name]" --repo-owner="[repo owner name]" --git-token="[your git token]"  
+```  
