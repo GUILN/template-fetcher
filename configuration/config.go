@@ -18,9 +18,9 @@ var (
 )
 
 type Config struct {
-	Repo      string
-	token     string
-	RepoOwner string
+	Repo      string `json:"repo"`
+	token     string `json:"token"`
+	RepoOwner string `json:"repo_owner"`
 }
 
 func (c *Config) NewConfig(repoName, repoOwner string) *Config {
