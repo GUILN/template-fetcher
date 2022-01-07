@@ -1,13 +1,11 @@
 package sync
 
-import "github.com/guiln/boilerplate-cli/src/configuration"
-
 type FetcherApplication struct {
-	config *configuration.Config
+	options *FetcherApplicationOptions
 }
 
-func NewFetcherApplication(config *configuration.Config) *FetcherApplication {
-	return &FetcherApplication{config: config}
+func NewFetcherApplication(options *FetcherApplicationOptions) *FetcherApplication {
+	return &FetcherApplication{options: options}
 }
 
 func (fApp *FetcherApplication) SyncWithTemplateRepo() {
@@ -17,4 +15,10 @@ func (fApp *FetcherApplication) List() {
 }
 
 func (fApp *FetcherApplication) Fetch(repoPath ...string) {
+}
+
+type FetcherApplicationOptions struct {
+	Repo      string
+	RepoOwner string
+	Token     string
 }
