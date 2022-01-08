@@ -4,48 +4,60 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/guiln/boilerplate-cli/src/crypto"
 )
 
 const (
-	templateFetcherPath        string = "~/.template.fetcher"
-	configFileName             string = "fetcher.config"
-	availableTemplatesFileName string = "templates"
+	configDirPath     string = "~/.template.fetcher"
+	configFileName    string = "fetcher.config"
+	templatesFileName string = "templates.json"
 )
 
 var (
-	configFilePath             string = filepath.Join(templateFetcherPath, configFileName)
-	availableTemplatesFilePath string = filepath.Join(templateFetcherPath, availableTemplatesFileName)
+	configFilePath    string = filepath.Join(configDirPath, configFileName)
+	templatesFilePath string = filepath.Join(configDirPath, templatesFileName)
 )
 
 type Config struct {
 	Repo      string `json:"repo"`
-	token     string `json:"token"`
 	RepoOwner string `json:"repo_owner"`
+	token     string `json:"token"`
+	secret    string
 }
 
-func (c *Config) NewConfig(repoName, repoOwner string) *Config {
+func NewConfig(repoName, repoOwner, secret string) *Config {
 	return &Config{
 		Repo:      repoName,
 		RepoOwner: repoOwner,
+		secret:    secret,
 	}
 }
 
 // SaveToken saves encrypted token in the config
-func (c *Config) GetToken() string {
-	//TODO: decrypt the token
-	return "" // return token
+func (c *Config) GetToken() (string, *ConfigError) {
+	decryptedToken, err := crypto.Decrypt(c.token, c.secret)
+	if err != nil {
+		return "", CreateConfigError("error when trying to decrypt token", err)
+	}
+
+	return decryptedToken, nil
 }
 
 func (c *Config) SetToken(token string) *ConfigError {
-	// TODO encrypt the token
-	// TODO sets toke like: c.token = encryptedToken
+	encryptedToken, err := crypto.Encrypt(token, c.secret)
+	if err != nil {
+		return CreateConfigError("enrror when trying to encrypt git token", err)
+	}
+
+	c.token = encryptedToken
 	return nil
 }
 
 func (c *Config) LoadConfig() *ConfigError {
-	if !checkPathExists(templateFetcherPath) {
-		if err := os.Mkdir(templateFetcherPath, 0755); err != nil {
-			return CreateConfigError(fmt.Sprintf("error ocurred when trying to create folder %s", templateFetcherPath), err)
+	if !checkPathExists(configDirPath) {
+		if err := os.Mkdir(configDirPath, 0755); err != nil {
+			return CreateConfigError(fmt.Sprintf("error ocurred when trying to create folder %s", configDirPath), err)
 		}
 	}
 	if !checkPathExists(configFilePath) {
