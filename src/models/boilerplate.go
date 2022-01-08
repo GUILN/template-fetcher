@@ -1,68 +1,87 @@
 package models
 
 import (
+	"encoding/json"
 	"strings"
 )
 
 // BoilerplateRepo holds the pointer to templates root folder
 type BoilerplateRepo struct {
-	RootBoilerplateFolder *BoilerplateFolder `yaml:"templates"`
+	RootBoilerplateFolder *BoilerplateFolder `json:"RootTemplate"`
 }
 
 // NewBoilerplateRepo has the same effect as creating directly through &BoilerplateRepo{}
 // But setting isContainerFolder = false && isRootFolder = true by default
 func NewBoilerplateRepo(rootFolder *BoilerplateFolder) *BoilerplateRepo {
-	rootFolder.isContainerFolder = false
-	rootFolder.isRootFolder = true
+	rootFolder.IsContainerFolder = false
+	rootFolder.IsRootFolder = true
 
 	return &BoilerplateRepo{RootBoilerplateFolder: rootFolder}
 }
 
 // Holds the structure and info of a template folder with nested
 type BoilerplateFolder struct {
-	isContainerFolder       bool
-	isRootFolder            bool
-	path                    string
-	childBoilerplateFolders []*BoilerplateFolder
+	IsContainerFolder       bool                 `json:is_container_folder"`
+	IsRootFolder            bool                 `json:"is_root_folder"`
+	Path                    string               `json:"path"`
+	ChildBoilerplateFolders []*BoilerplateFolder `json:"child_boilerplate_folders"`
 }
 
 func NewBoilerplateFolder(folderPath string, isContainer bool) *BoilerplateFolder {
-	return &BoilerplateFolder{path: folderPath, isContainerFolder: isContainer, isRootFolder: false}
+	return &BoilerplateFolder{Path: folderPath, IsContainerFolder: isContainer, IsRootFolder: false}
 }
 
-func (bfolder *BoilerplateFolder) Marshal() (string, *BoilerplateError) {
+func JsonUnmarshal(jsonString string) (*BoilerplateFolder, *BoilerplateError) {
+	var rootFolder BoilerplateFolder
+	err := json.Unmarshal([]byte(jsonString), &rootFolder)
+	if err != nil {
+		return nil, CreateBoilerplateErrorFromError(err, "error while trying to unmarshal boilerplate folder json")
+	}
+	return &rootFolder, nil
+}
+
+func (bfolder *BoilerplateFolder) String() (string, *BoilerplateError) {
 	return printTree(bfolder, 0), nil
 }
 
+func (bfolder *BoilerplateFolder) JsonMarshal() (string, *BoilerplateError) {
+	outXml, err := json.Marshal(bfolder)
+	if err != nil {
+		return "", CreateBoilerplateErrorFromError(err, "error when trying to marshal boilerplate folder to xml")
+	}
+
+	return string(outXml), nil
+}
+
 func (bFolder *BoilerplateFolder) GetPath() string {
-	return bFolder.path
+	return bFolder.Path
 }
 
 func (bFolder *BoilerplateFolder) SetPath(path string) {
-	bFolder.path = path
+	bFolder.Path = path
 }
 
 func (bFolder *BoilerplateFolder) AddChild(boilerplateFolders ...*BoilerplateFolder) {
-	bFolder.childBoilerplateFolders = append(bFolder.childBoilerplateFolders, boilerplateFolders...)
+	bFolder.ChildBoilerplateFolders = append(bFolder.ChildBoilerplateFolders, boilerplateFolders...)
 }
 
 func (bFolder *BoilerplateFolder) SetIsContainer(isContainer bool) {
-	bFolder.isContainerFolder = isContainer
+	bFolder.IsContainerFolder = isContainer
 }
 
 func (bFolder *BoilerplateFolder) IsContainer() bool {
-	return bFolder.isContainerFolder
+	return bFolder.IsContainerFolder
 }
 
 func (bFolder *BoilerplateFolder) IsRoot() bool {
-	return bFolder.isRootFolder
+	return bFolder.IsRootFolder
 }
 
 func printTree(folder *BoilerplateFolder, level int) string {
 	splitPath := strings.Split(folder.GetPath(), "/")
 	tree := strings.Repeat(" ", level*3) + splitPath[len(splitPath)-1]
 
-	for _, child := range folder.childBoilerplateFolders {
+	for _, child := range folder.ChildBoilerplateFolders {
 		tree += "\n"
 		tree += printTree(child, level+1)
 	}
