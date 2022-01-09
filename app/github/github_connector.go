@@ -2,6 +2,8 @@ package github
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/guiln/boilerplate-cli/src/models"
@@ -45,6 +47,35 @@ func (gc *GithubConnector) GetTemplateRepo() (*models.BoilerplateRepo, *models.B
 }
 
 func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
+	// TODO
+	_, dirContent, _, err := gc.client.Repositories.GetContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, path, &github.RepositoryContentGetOptions{})
+	if err != nil {
+		return models.CreateBoilerplateErrorFromError(err, "error occured when traversing repo on github")
+	}
+
+	// TODO: Create Dir
+	fmt.Printf("creating dir %s\n", path)
+
+	var subDirsPath []string
+
+	for _, content := range dirContent {
+		contentType := content.GetType()
+		if contentType == fileContentType {
+			fileName := content.GetName()
+			downloadUrl := content.GetDownloadURL()
+			fullFileName := filepath.Join(path, fileName)
+			// TODO: Download file
+			fmt.Printf("downloading %s at %s\n", fullFileName, downloadUrl)
+		} else if contentType == folderContentType {
+			subDirsPath = append(subDirsPath, content.GetPath())
+		}
+	}
+
+	for _, subDirPath := range subDirsPath {
+		if err := gc.Fetch(subDirPath); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }
