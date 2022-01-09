@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/guiln/boilerplate-cli/app/configuration"
-	"github.com/guiln/boilerplate-cli/app/connectors"
+	"github.com/guiln/boilerplate-cli/app/github"
 	"github.com/guiln/boilerplate-cli/app/repo"
 	"github.com/guiln/boilerplate-cli/src/application"
 	"github.com/spf13/cobra"
@@ -60,12 +60,14 @@ func initApplication() {
 	if err != nil {
 		panic(err)
 	}
+	ghbConnector := github.NewGithubConnector(&github.GithubConnectorOptions{
+		GitToken:                      tkn,
+		GitBoilerplateRepository:      cfg.Repo,
+		GitBoilerplateRepositoryOwner: cfg.RepoOwner,
+	})
 	fetcherApplication = application.NewFetcherApplication(&application.FetcherApplicationOptions{
-		RepoHandler: repo.NewTemplateJsonRepo(cfg.GetTemplatesFilePath()),
-		ExternalRepoConnector: connectors.NewGithubConnector(&connectors.GithubConnectorOptions{
-			GitToken:                      tkn,
-			GitBoilerplateRepository:      cfg.Repo,
-			GitBoilerplateRepositoryOwner: cfg.RepoOwner,
-		}),
+		RepoHandler:           repo.NewTemplateJsonRepo(cfg.GetTemplatesFilePath()),
+		ExternalRepoConnector: ghbConnector,
+		TemplateFetcher:       ghbConnector,
 	})
 }

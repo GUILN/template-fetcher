@@ -1,4 +1,4 @@
-package connectors
+package github
 
 import (
 	"context"
@@ -42,6 +42,11 @@ func (gc *GithubConnector) GetTemplateRepo() (*models.BoilerplateRepo, *models.B
 	boilerplateRepo := models.NewBoilerplateRepo(rootFolder)
 
 	return boilerplateRepo, nil
+}
+
+func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
+
+	return nil
 }
 
 func (gc *GithubConnector) traverseDirectory(dirName string) (*models.BoilerplateFolder, *models.BoilerplateError) {

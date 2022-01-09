@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/guiln/boilerplate-cli/src/adapters"
 	"github.com/guiln/boilerplate-cli/src/models"
 )
@@ -25,7 +27,12 @@ func (fApp *FetcherApplication) GetLocalRepo() (*models.BoilerplateRepo, *models
 	return repo, nil
 }
 
-func (fApp *FetcherApplication) Fetch(repoPath ...string) {
+func (fApp *FetcherApplication) Fetch(repoPath string) *models.BoilerplateError {
+	if err := fApp.options.TemplateFetcher.Fetch(repoPath); err != nil {
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("failed to fetch %s repo", repoPath))
+	}
+
+	return nil
 }
 
 func (fApp *FetcherApplication) Sync() *models.BoilerplateError {
@@ -43,4 +50,5 @@ func (fApp *FetcherApplication) Sync() *models.BoilerplateError {
 type FetcherApplicationOptions struct {
 	RepoHandler           adapters.RepoHandler
 	ExternalRepoConnector adapters.ExternalRepoConnector
+	TemplateFetcher       adapters.TemplateFetcher
 }
