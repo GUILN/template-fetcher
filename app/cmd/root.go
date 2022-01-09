@@ -6,6 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/guiln/boilerplate-cli/app/configuration"
+	"github.com/guiln/boilerplate-cli/app/connectors"
+	"github.com/guiln/boilerplate-cli/app/repo"
+	"github.com/guiln/boilerplate-cli/src/application"
 	"github.com/spf13/cobra"
 )
 
@@ -14,8 +17,8 @@ const (
 )
 
 var (
-	cfgDir string
-	cfg    *configuration.Config
+	cfg                *configuration.Config
+	fetcherApplication *application.FetcherApplication
 )
 
 var rootCmd = &cobra.Command{
@@ -33,7 +36,7 @@ func Execute() {
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(initConfig, initApplication)
 
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
@@ -50,4 +53,19 @@ func initConfig() {
 		fmt.Println("error while trying to load configuration, please make sure you have set the configuration with config command")
 		fmt.Printf("%v", err)
 	}
+}
+
+func initApplication() {
+	tkn, err := cfg.GetToken()
+	if err != nil {
+		panic(err)
+	}
+	fetcherApplication = application.NewFetcherApplication(&application.FetcherApplicationOptions{
+		RepoHandler: repo.NewTemplateJsonRepo(cfg.GetTemplatesFilePath()),
+		ExternalRepoConnector: connectors.NewGithubConnector(&connectors.GithubConnectorOptions{
+			GitToken:                      tkn,
+			GitBoilerplateRepository:      cfg.Repo,
+			GitBoilerplateRepositoryOwner: cfg.RepoOwner,
+		}),
+	})
 }

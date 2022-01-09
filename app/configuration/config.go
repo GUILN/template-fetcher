@@ -55,6 +55,10 @@ func (c *Config) SetToken(token string) *ConfigError {
 	return nil
 }
 
+func (c *Config) GetTemplatesFilePath() string {
+	return c.templatesFilePath
+}
+
 func (c *Config) LoadConfig() *ConfigError {
 	if !helpers.CheckPathExists(c.configDirPath) {
 		if err := os.Mkdir(c.configDirPath, 0755); err != nil {
