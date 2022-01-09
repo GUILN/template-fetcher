@@ -9,3 +9,17 @@ func CheckPathExists(path string) bool {
 
 	return true
 }
+
+func CreateFile(fContent []byte, fPath string) error {
+	f, err := os.Create(fPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.Write(fContent)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

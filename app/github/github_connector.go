@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"github.com/google/go-github/v41/github"
+	"github.com/guiln/boilerplate-cli/helpers"
 	"github.com/guiln/boilerplate-cli/src/models"
 	"golang.org/x/oauth2"
 )
@@ -55,7 +57,10 @@ func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
 	}
 
 	// TODO: Create Dir
-	fmt.Printf("creating dir %s\n", path)
+	fmt.Printf("creating dir %s...\n", path)
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return models.CreateBoilerplateErrorFromError(err, "error occured when trying to create repo's folder locally")
+	}
 
 	var subDirsPath []string
 
@@ -130,8 +135,12 @@ func (gc *GithubConnector) downloadFile(repoContent *github.RepositoryContent, d
 		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
 	}
 
-	fmt.Println("response transformed: ")
-	fmt.Println(string(responseBytes))
+	fmt.Printf("writing file: %s\n", downloadPath)
+	if err := helpers.CreateFile(responseBytes, downloadPath); err != nil {
+		fmt.Print(err)
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when trying to create file %s", downloadPath))
+	}
+
 	fmt.Println("response status: ")
 	fmt.Println(response.Status)
 	fmt.Println(response.StatusCode)
