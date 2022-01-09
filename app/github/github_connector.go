@@ -3,6 +3,7 @@ package github
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"path/filepath"
 
 	"github.com/google/go-github/v41/github"
@@ -65,7 +66,11 @@ func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
 			downloadUrl := content.GetDownloadURL()
 			fullFileName := filepath.Join(path, fileName)
 			// TODO: Download file
-			fmt.Printf("downloading %s at %s\n", fullFileName, downloadUrl)
+			fmt.Printf("downloading %s at %s...\n", fullFileName, downloadUrl)
+			if err := gc.downloadFile(content, fullFileName); err != nil {
+				return err
+			}
+			// Downoads content
 		} else if contentType == folderContentType {
 			subDirsPath = append(subDirsPath, content.GetPath())
 		}
@@ -110,6 +115,28 @@ func (gc *GithubConnector) traverseDirectory(dirName string) (*models.Boilerplat
 	}
 
 	return currentFolder, nil
+}
+
+func (gc *GithubConnector) downloadFile(repoContent *github.RepositoryContent, downloadPath string) *models.BoilerplateError {
+	repoPath := repoContent.GetPath()
+	readCloser, response, err := gc.client.Repositories.DownloadContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, repoPath, &github.RepositoryContentGetOptions{})
+	if err != nil {
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
+	}
+	defer readCloser.Close()
+
+	responseBytes, err := ioutil.ReadAll(readCloser)
+	if err != nil {
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
+	}
+
+	fmt.Println("response transformed: ")
+	fmt.Println(string(responseBytes))
+	fmt.Println("response status: ")
+	fmt.Println(response.Status)
+	fmt.Println(response.StatusCode)
+
+	return nil
 }
 
 func (gc *GithubConnector) initialize() {
