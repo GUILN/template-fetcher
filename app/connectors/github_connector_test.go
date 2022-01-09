@@ -9,5 +9,5 @@ func Test_GithubConnector_GetBoilerplates_GetsBoilerplatesSuccessfully(t *testin
 		GitBoilerplateRepositoryOwner: "guiln",
 	})
 
-	githubConnector.GetBoilerplates()
+	githubConnector.GetTemplateRepo()
 }

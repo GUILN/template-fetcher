@@ -29,8 +29,9 @@ func (fApp *FetcherApplication) Fetch(repoPath ...string) {
 }
 
 type FetcherApplicationOptions struct {
-	Repo        string
-	RepoOwner   string
-	Token       string
-	RepoHandler adapters.RepoHandler
+	Repo                  string
+	RepoOwner             string
+	Token                 string
+	RepoHandler           adapters.RepoHandler
+	ExternalRepoConnector adapters.ExternalRepoConnector
 }

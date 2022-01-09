@@ -33,7 +33,7 @@ func NewGithubConnector(options *GithubConnectorOptions) *GithubConnector {
 	return conn
 }
 
-func (gc *GithubConnector) GetBoilerplates() (*models.BoilerplateRepo, *models.BoilerplateError) {
+func (gc *GithubConnector) GetTemplateRepo() (*models.BoilerplateRepo, *models.BoilerplateError) {
 	rootFolder, err := gc.traverseDirectory("/")
 	if err != nil {
 		return nil, err

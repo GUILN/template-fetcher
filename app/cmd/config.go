@@ -1,51 +1,64 @@
-/*
-Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	repoName   string
+	repoOwner  string
+	gitToken   string
+	listConfig bool
 )
 
 // configCmd represents the config command
 var configCmd = &cobra.Command{
 	Use:   "config",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "use config command to configure tfetcher paramaters",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("config called")
+		if listConfig {
+			fmt.Println(cfg.String())
+		} else {
+			updateConfig()
+		}
 	},
 }
 
+func updateConfig() {
+	updatedParametersBuilder := strings.Builder{}
+
+	if repoName != "" {
+		cfg.Repo = repoName
+		updatedParametersBuilder.WriteString("repo name updated!\n")
+	}
+	if repoOwner != "" {
+		cfg.RepoOwner = repoOwner
+		updatedParametersBuilder.WriteString("repo owner updated!\n")
+	}
+	if gitToken != "" {
+		if cfgError := cfg.SetToken(gitToken); cfgError != nil {
+			panic(cfgError)
+		}
+		updatedParametersBuilder.WriteString("repo token updated!\n")
+	}
+
+	if cfgError := cfg.PersistConfig(); cfgError != nil {
+		panic(cfgError)
+	}
+
+	if updatedParameters := updatedParametersBuilder.String(); updatedParameters != "" {
+		fmt.Println("updated parameters: ")
+		fmt.Println(updatedParameters)
+	}
+}
+
 func init() {
+	configCmd.PersistentFlags().StringVar(&repoName, "repo-name", "", "repo-name=[your repository name]")
+	configCmd.PersistentFlags().StringVar(&repoOwner, "repo-owner", "", "repo-owner=[repository's owner]")
+	configCmd.PersistentFlags().StringVar(&gitToken, "token", "", "token=[your secret token] (stored encrypted)")
+	configCmd.PersistentFlags().BoolVar(&listConfig, "list", false, "list")
 	rootCmd.AddCommand(configCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

@@ -13,11 +13,11 @@ const (
 )
 
 func Test_GivenISetAndGetToken_ThenTokenIsSetEncryptedAndGotDecrypted(t *testing.T) {
-	cfg := NewConfig("repoName", "repoOwner", mySecret)
+	cfg := NewConfig("", mySecret)
 	err := cfg.SetToken(gitToken)
 
 	assert.Nil(t, err)
-	assert.Equal(t, encryptedToken, cfg.token)
+	assert.Equal(t, encryptedToken, cfg.Token)
 
 	tkn, err := cfg.GetToken()
 	assert.Nil(t, err)
