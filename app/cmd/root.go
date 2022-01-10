@@ -8,7 +8,7 @@ import (
 	"github.com/guiln/boilerplate-cli/app/configuration"
 	"github.com/guiln/boilerplate-cli/app/github"
 	"github.com/guiln/boilerplate-cli/app/repo"
-	"github.com/guiln/boilerplate-cli/src/application"
+	"github.com/guiln/boilerplate-cli/domain/application"
 	"github.com/spf13/cobra"
 )
 

@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/guiln/boilerplate-cli/src/models"
+	"github.com/guiln/boilerplate-cli/domain/models"
 )
 
 type JsonTemplateRepo struct {

@@ -1,6 +1,6 @@
 package adapters
 
-import "github.com/guiln/boilerplate-cli/src/models"
+import "github.com/guiln/boilerplate-cli/domain/models"
 
 type RepoHandler interface {
 	PersistRepo(*models.BoilerplateRepo) *models.BoilerplateError

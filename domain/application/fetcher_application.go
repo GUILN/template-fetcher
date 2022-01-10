@@ -3,8 +3,8 @@ package application
 import (
 	"fmt"
 
-	"github.com/guiln/boilerplate-cli/src/adapters"
-	"github.com/guiln/boilerplate-cli/src/models"
+	"github.com/guiln/boilerplate-cli/domain/adapters"
+	"github.com/guiln/boilerplate-cli/domain/models"
 )
 
 type FetcherApplication struct {

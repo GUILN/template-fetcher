@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/google/go-github/v41/github"
+	"github.com/guiln/boilerplate-cli/domain/models"
 	"github.com/guiln/boilerplate-cli/helpers"
-	"github.com/guiln/boilerplate-cli/src/models"
 	"golang.org/x/oauth2"
 )
 
