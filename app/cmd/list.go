@@ -21,7 +21,7 @@ var listCmd = &cobra.Command{
 		}
 		fmt.Println(strRepoRepresentation)
 		fmt.Println("\n\nto use following templates use fetch command with desired template path separated by / like:")
-		fmt.Println("tfetch node/api/express-restful")
+		fmt.Println("tfetch --path=node/api/express-restful")
 	},
 }
 

@@ -58,10 +58,10 @@ func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
 
 	// TODO: Create Dir
 	fmt.Printf("creating dir %s...\n", path)
-	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+
+	if err := os.MkdirAll(path, 0755); err != nil {
 		return models.CreateBoilerplateErrorFromError(err, "error occured when trying to create repo's folder locally")
 	}
-
 	var subDirsPath []string
 
 	for _, content := range dirContent {
