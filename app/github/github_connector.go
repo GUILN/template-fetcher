@@ -49,17 +49,15 @@ func (gc *GithubConnector) GetTemplateRepo() (*models.BoilerplateRepo, *models.B
 	return boilerplateRepo, nil
 }
 
-func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
-	// TODO
+func (gc *GithubConnector) Fetch(path, folderPath string) *models.BoilerplateError {
 	_, dirContent, _, err := gc.client.Repositories.GetContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, path, &github.RepositoryContentGetOptions{})
 	if err != nil {
 		return models.CreateBoilerplateErrorFromError(err, "error occured when traversing repo on github")
 	}
 
-	// TODO: Create Dir
-	fmt.Printf("creating dir %s...\n", path)
+	fmt.Printf("creating dir %s...\n", folderPath)
 
-	if err := os.MkdirAll(path, 0755); err != nil {
+	if err := os.MkdirAll(folderPath, 0755); err != nil {
 		return models.CreateBoilerplateErrorFromError(err, "error occured when trying to create repo's folder locally")
 	}
 	var subDirsPath []string
@@ -69,8 +67,8 @@ func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
 		if contentType == fileContentType {
 			fileName := content.GetName()
 			downloadUrl := content.GetDownloadURL()
-			fullFileName := filepath.Join(path, fileName)
-			// TODO: Download file
+			fullFileName := filepath.Join(folderPath, fileName)
+
 			fmt.Printf("downloading %s at %s...\n", fullFileName, downloadUrl)
 			if err := gc.downloadFile(content, fullFileName); err != nil {
 				return err
@@ -82,7 +80,8 @@ func (gc *GithubConnector) Fetch(path string) *models.BoilerplateError {
 	}
 
 	for _, subDirPath := range subDirsPath {
-		if err := gc.Fetch(subDirPath); err != nil {
+		subDirFolderPath := filepath.Join(folderPath, filepath.Base(subDirPath))
+		if err := gc.Fetch(subDirPath, subDirFolderPath); err != nil {
 			return err
 		}
 	}
@@ -124,7 +123,7 @@ func (gc *GithubConnector) traverseDirectory(dirName string) (*models.Boilerplat
 
 func (gc *GithubConnector) downloadFile(repoContent *github.RepositoryContent, downloadPath string) *models.BoilerplateError {
 	repoPath := repoContent.GetPath()
-	readCloser, response, err := gc.client.Repositories.DownloadContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, repoPath, &github.RepositoryContentGetOptions{})
+	readCloser, _, err := gc.client.Repositories.DownloadContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, repoPath, &github.RepositoryContentGetOptions{})
 	if err != nil {
 		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
 	}
@@ -140,10 +139,6 @@ func (gc *GithubConnector) downloadFile(repoContent *github.RepositoryContent, d
 		fmt.Print(err)
 		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when trying to create file %s", downloadPath))
 	}
-
-	fmt.Println("response status: ")
-	fmt.Println(response.Status)
-	fmt.Println(response.StatusCode)
 
 	return nil
 }

@@ -27,8 +27,11 @@ func (fApp *FetcherApplication) GetLocalRepo() (*models.BoilerplateRepo, *models
 	return repo, nil
 }
 
-func (fApp *FetcherApplication) Fetch(repoPath string) *models.BoilerplateError {
-	if err := fApp.options.TemplateFetcher.Fetch(repoPath); err != nil {
+func (fApp *FetcherApplication) Fetch(repoPath, folderPath string) *models.BoilerplateError {
+	if folderPath == "" {
+		folderPath = repoPath
+	}
+	if err := fApp.options.TemplateFetcher.Fetch(repoPath, folderPath); err != nil {
 		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("failed to fetch %s repo", repoPath))
 	}
 

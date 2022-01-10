@@ -6,7 +6,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var templatePath string
+var (
+	templatePath string
+	folderName   string
+)
 
 var fetchCmd = &cobra.Command{
 	Use:   "fetch",
@@ -16,7 +19,7 @@ var fetchCmd = &cobra.Command{
 			panic(fmt.Errorf("path argument needs to be specified"))
 		}
 
-		if err := fetcherApplication.Fetch(templatePath); err != nil {
+		if err := fetcherApplication.Fetch(templatePath, folderName); err != nil {
 			panic(err)
 		}
 	},
@@ -24,5 +27,6 @@ var fetchCmd = &cobra.Command{
 
 func init() {
 	fetchCmd.PersistentFlags().StringVar(&templatePath, "path", "", "path=[path/to/your/repo]")
+	fetchCmd.PersistentFlags().StringVar(&folderName, "name", "", "name=[folder to dump template]")
 	rootCmd.AddCommand(fetchCmd)
 }
