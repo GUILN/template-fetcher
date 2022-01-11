@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"strings"
 )
 
@@ -78,12 +79,19 @@ func (bFolder *BoilerplateFolder) IsRoot() bool {
 }
 
 func printTree(folder *BoilerplateFolder, level int) string {
-	splitPath := strings.Split(folder.GetPath(), "/")
-	tree := strings.Repeat(" ", level*3) + splitPath[len(splitPath)-1]
-
+	baseFolder := filepath.Base(folder.GetPath())
+	var tree string
+	if baseFolder != "/" {
+		level++
+		tree = strings.Repeat(" ", level*3) + baseFolder
+	} else {
+		if level == 0 {
+			tree = "TEMPLATES:"
+		}
+	}
 	for _, child := range folder.ChildBoilerplateFolders {
 		tree += "\n"
-		tree += printTree(child, level+1)
+		tree += printTree(child, level)
 	}
 
 	return tree
