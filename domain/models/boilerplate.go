@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"fmt"
 	"path/filepath"
 	"strings"
 )
@@ -14,7 +15,7 @@ type BoilerplateRepo struct {
 // NewBoilerplateRepo has the same effect as creating directly through &BoilerplateRepo{}
 // But setting isContainerFolder = false && isRootFolder = true by default
 func NewBoilerplateRepo(rootFolder *BoilerplateFolder) *BoilerplateRepo {
-	rootFolder.IsContainerFolder = false
+	rootFolder.IsRepoContainerFolder = false
 	rootFolder.IsRootFolder = true
 
 	return &BoilerplateRepo{RootBoilerplateFolder: rootFolder}
@@ -22,14 +23,16 @@ func NewBoilerplateRepo(rootFolder *BoilerplateFolder) *BoilerplateRepo {
 
 // Holds the structure and info of a template folder with nested
 type BoilerplateFolder struct {
-	IsContainerFolder       bool                 `json:is_container_folder"`
+	IsRepoContainerFolder   bool                 `json:is_repo_container_folder"`
+	IsDocContainerFolder    bool                 `json:is_doc_container_folder"`
 	IsRootFolder            bool                 `json:"is_root_folder"`
 	Path                    string               `json:"path"`
 	ChildBoilerplateFolders []*BoilerplateFolder `json:"child_boilerplate_folders"`
+	ChildTemplateDocuments  []*TemplateDocument  `json:child_template_documents`
 }
 
-func NewBoilerplateFolder(folderPath string, isContainer bool) *BoilerplateFolder {
-	return &BoilerplateFolder{Path: folderPath, IsContainerFolder: isContainer, IsRootFolder: false}
+func NewBoilerplateFolder(folderPath string, isRepoContainer bool, isDocContainer bool) *BoilerplateFolder {
+	return &BoilerplateFolder{Path: folderPath, IsRepoContainerFolder: isRepoContainer, IsDocContainerFolder: isDocContainer, IsRootFolder: false}
 }
 
 func JsonUnmarshal(jsonString string) (*BoilerplateFolder, *BoilerplateError) {
@@ -66,12 +69,20 @@ func (bFolder *BoilerplateFolder) AddChild(boilerplateFolders ...*BoilerplateFol
 	bFolder.ChildBoilerplateFolders = append(bFolder.ChildBoilerplateFolders, boilerplateFolders...)
 }
 
-func (bFolder *BoilerplateFolder) SetIsContainer(isContainer bool) {
-	bFolder.IsContainerFolder = isContainer
+func (bFolder *BoilerplateFolder) AddChildDoc(templateDoc ...*TemplateDocument) *BoilerplateError {
+	if !bFolder.IsDocContainerFolder {
+		return &BoilerplateError{Message: "cannot add template docs into non doc container folder"}
+	}
+	bFolder.ChildTemplateDocuments = append(bFolder.ChildTemplateDocuments, templateDoc...)
+	return nil
 }
 
-func (bFolder *BoilerplateFolder) IsContainer() bool {
-	return bFolder.IsContainerFolder
+func (bFolder *BoilerplateFolder) SetIsRepoContainer(isContainer bool) {
+	bFolder.IsRepoContainerFolder = isContainer
+}
+
+func (bFolder *BoilerplateFolder) IsRepoContainer() bool {
+	return bFolder.IsRepoContainerFolder
 }
 
 func (bFolder *BoilerplateFolder) IsRoot() bool {
@@ -84,6 +95,11 @@ func printTree(folder *BoilerplateFolder, level int) string {
 	if baseFolder != "/" {
 		level++
 		tree = strings.Repeat(" ", level*3) + baseFolder
+		if folder.IsRepoContainerFolder {
+			tree += " [REPO]"
+		} else if folder.IsDocContainerFolder {
+			tree += "\n" + printChildDocs(folder, strings.Repeat(" ", (level+1)*3))
+		}
 	} else {
 		if level == 0 {
 			tree = "TEMPLATES:"
@@ -95,4 +111,23 @@ func printTree(folder *BoilerplateFolder, level int) string {
 	}
 
 	return tree
+}
+
+func printChildDocs(folder *BoilerplateFolder, space string) string {
+	if len(folder.ChildTemplateDocuments) == 0 {
+		panic(fmt.Errorf("cannot print child template documents if there is no template documents"))
+	}
+	sBuilder := strings.Builder{}
+	for _, tdoc := range folder.ChildTemplateDocuments {
+		sBuilder.WriteString(space)
+		sBuilder.WriteString(tdoc.Name)
+		sBuilder.WriteString(" [DOC]")
+		sBuilder.WriteString("\n")
+	}
+	return sBuilder.String()
+}
+
+type TemplateDocument struct {
+	Name string `json:"name"`
+	Path string `json:"path"`
 }

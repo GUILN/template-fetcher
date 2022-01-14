@@ -17,6 +17,7 @@ const (
 	folderContentType            string = "dir"
 	fileContentType              string = "file"
 	boilerplateIndicatorFileName string = ".boilerplate" //if folder contains this file in the root means that it is a boilerplate container folder
+	docDirIndicatorFileName      string = ".docdir"      //if folder contains this file in the root means that it is a doc template container folder
 )
 
 type GithubConnector struct {
@@ -95,14 +96,14 @@ func (gc *GithubConnector) traverseDirectory(dirName string) (*models.Boilerplat
 		return nil, models.CreateBoilerplateErrorFromError(err, "error occured when traversing repo on github")
 	}
 
-	currentFolder := models.NewBoilerplateFolder(dirName, false)
+	currentFolder := models.NewBoilerplateFolder(dirName, false, false)
 	var childFoldersPathToTraverse []string
 
 	for _, content := range dirContent {
 		contentType := content.GetType()
 		if contentType == fileContentType {
 			if content.GetName() == boilerplateIndicatorFileName {
-				currentFolder.SetIsContainer(true)
+				currentFolder.SetIsRepoContainer(true)
 				return currentFolder, nil
 			}
 		} else if contentType == folderContentType {
