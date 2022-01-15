@@ -31,7 +31,7 @@ func (fApp *FetcherApplication) Fetch(repoPath, folderPath string) *models.Boile
 	if folderPath == "" {
 		folderPath = repoPath
 	}
-	if err := fApp.options.TemplateFetcher.Fetch(repoPath, folderPath); err != nil {
+	if err := fApp.options.TemplateFetcher.FetchRepo(repoPath, folderPath); err != nil {
 		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("failed to fetch %s repo", repoPath))
 	}
 

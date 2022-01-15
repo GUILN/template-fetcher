@@ -50,7 +50,7 @@ func (gc *GithubConnector) GetTemplateRepo() (*models.BoilerplateRepo, *models.B
 	return boilerplateRepo, nil
 }
 
-func (gc *GithubConnector) Fetch(path, folderPath string) *models.BoilerplateError {
+func (gc *GithubConnector) FetchRepo(path, folderPath string) *models.BoilerplateError {
 	_, dirContent, _, err := gc.client.Repositories.GetContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, path, &github.RepositoryContentGetOptions{})
 	if err != nil {
 		return models.CreateBoilerplateErrorFromError(err, "error occured when traversing repo on github")
@@ -82,11 +82,15 @@ func (gc *GithubConnector) Fetch(path, folderPath string) *models.BoilerplateErr
 
 	for _, subDirPath := range subDirsPath {
 		subDirFolderPath := filepath.Join(folderPath, filepath.Base(subDirPath))
-		if err := gc.Fetch(subDirPath, subDirFolderPath); err != nil {
+		if err := gc.FetchRepo(subDirPath, subDirFolderPath); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (gc *GithubConnector) FetchDoc(path, docPath string) *models.BoilerplateError {
 	return nil
 }
 
