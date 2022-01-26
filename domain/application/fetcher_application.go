@@ -1,8 +1,6 @@
 package application
 
 import (
-	"fmt"
-
 	"github.com/guiln/boilerplate-cli/domain/adapters"
 	"github.com/guiln/boilerplate-cli/domain/models"
 )
@@ -13,9 +11,6 @@ type FetcherApplication struct {
 
 func NewFetcherApplication(options *FetcherApplicationOptions) *FetcherApplication {
 	return &FetcherApplication{options: options}
-}
-
-func (fApp *FetcherApplication) SyncWithTemplateRepo() {
 }
 
 func (fApp *FetcherApplication) GetLocalRepo() (*models.BoilerplateRepo, *models.BoilerplateError) {
@@ -32,9 +27,19 @@ func (fApp *FetcherApplication) Fetch(repoPath, folderPath string) *models.Boile
 		folderPath = repoPath
 	}
 	if err := fApp.options.TemplateFetcher.FetchRepo(repoPath, folderPath); err != nil {
-		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("failed to fetch %s repo", repoPath))
+		return err
 	}
 
+	return nil
+}
+
+func (fApp *FetcherApplication) FetchDoc(path, localPath string) *models.BoilerplateError {
+	if localPath == "" {
+		localPath = path
+	}
+	if err := fApp.options.TemplateFetcher.FetchDoc(path, localPath); err != nil {
+		return err
+	}
 	return nil
 }
 

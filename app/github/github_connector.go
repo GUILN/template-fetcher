@@ -71,7 +71,7 @@ func (gc *GithubConnector) FetchRepo(path, folderPath string) *models.Boilerplat
 			fullFileName := filepath.Join(folderPath, fileName)
 
 			fmt.Printf("downloading %s at %s...\n", fullFileName, downloadUrl)
-			if err := gc.downloadFile(content, fullFileName); err != nil {
+			if err := gc.downloadFile(content.GetPath(), fullFileName); err != nil {
 				return err
 			}
 			// Downoads content
@@ -90,7 +90,11 @@ func (gc *GithubConnector) FetchRepo(path, folderPath string) *models.Boilerplat
 	return nil
 }
 
-func (gc *GithubConnector) FetchDoc(path, docPath string) *models.BoilerplateError {
+func (gc *GithubConnector) FetchDoc(path, localPath string) *models.BoilerplateError {
+	if err := gc.downloadFile(path, localPath); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -138,17 +142,16 @@ func (gc *GithubConnector) traverseDirectory(dirName string) (*models.Boilerplat
 	return currentFolder, nil
 }
 
-func (gc *GithubConnector) downloadFile(repoContent *github.RepositoryContent, downloadPath string) *models.BoilerplateError {
-	repoPath := repoContent.GetPath()
-	readCloser, _, err := gc.client.Repositories.DownloadContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, repoPath, &github.RepositoryContentGetOptions{})
+func (gc *GithubConnector) downloadFile(filePath string, downloadPath string) *models.BoilerplateError {
+	readCloser, _, err := gc.client.Repositories.DownloadContents(gc.ctx, gc.options.GitBoilerplateRepositoryOwner, gc.options.GitBoilerplateRepository, filePath, &github.RepositoryContentGetOptions{})
 	if err != nil {
-		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", filePath))
 	}
 	defer readCloser.Close()
 
 	responseBytes, err := ioutil.ReadAll(readCloser)
 	if err != nil {
-		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", repoPath))
+		return models.CreateBoilerplateErrorFromError(err, fmt.Sprintf("error occured when downloading file %s", filePath))
 	}
 
 	fmt.Printf("writing file: %s\n", downloadPath)

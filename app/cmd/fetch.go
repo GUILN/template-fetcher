@@ -10,7 +10,7 @@ import (
 var (
 	repoTemplatePath string
 	docTemplatePath  string
-	folderName       string
+	localPathName    string
 )
 
 var fetchCmd = &cobra.Command{
@@ -22,15 +22,22 @@ var fetchCmd = &cobra.Command{
 			os.Exit(1)
 		}
 
-		if err := fetcherApplication.Fetch(repoTemplatePath, folderName); err != nil {
-			panic(err)
+		if repoTemplatePath != "" {
+			if err := fetcherApplication.Fetch(repoTemplatePath, localPathName); err != nil {
+				panic(err)
+			}
+		} else {
+			if err := fetcherApplication.FetchDoc(docTemplatePath, localPathName); err != nil {
+				panic(err)
+			}
 		}
+
 	},
 }
 
 func init() {
 	fetchCmd.PersistentFlags().StringVar(&repoTemplatePath, "repo", "", "template=[path/to/your/template_repo]")
 	fetchCmd.PersistentFlags().StringVar(&docTemplatePath, "doc", "", "doc=[path/to/your/template_doc]")
-	fetchCmd.PersistentFlags().StringVar(&folderName, "name", "", "name=[folder to dump template]")
+	fetchCmd.PersistentFlags().StringVar(&localPathName, "name", "", "name=[path to dump template]")
 	rootCmd.AddCommand(fetchCmd)
 }
