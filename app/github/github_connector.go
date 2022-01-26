@@ -103,15 +103,27 @@ func (gc *GithubConnector) traverseDirectory(dirName string) (*models.Boilerplat
 	currentFolder := models.NewBoilerplateFolder(dirName, false, false)
 	var childFoldersPathToTraverse []string
 
+	// This loop determines if it is a Repo container or Doc container directory
 	for _, content := range dirContent {
 		contentType := content.GetType()
 		if contentType == fileContentType {
 			if content.GetName() == boilerplateIndicatorFileName {
 				currentFolder.SetIsRepoContainer(true)
 				return currentFolder, nil
+			} else if content.GetName() == docDirIndicatorFileName {
+				currentFolder.IsDocContainerFolder = true
+				break
 			}
-		} else if contentType == folderContentType {
+		}
+	}
+	// This loop goes through dir and adds child node folders to be traversed in case of current folder is node a Docfolder
+	// And add childDocs in case current folder is a Docfolder
+	for _, content := range dirContent {
+		contentType := content.GetType()
+		if contentType == folderContentType && !currentFolder.IsDocContainerFolder {
 			childFoldersPathToTraverse = append(childFoldersPathToTraverse, content.GetPath())
+		} else if contentType == fileContentType && *content.Name != docDirIndicatorFileName && currentFolder.IsDocContainerFolder {
+			currentFolder.AddChildDoc(&models.TemplateDocument{Name: *content.Name, Path: *content.Path})
 		}
 	}
 
