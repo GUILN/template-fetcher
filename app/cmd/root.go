@@ -22,11 +22,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "cmd",
-	Short: "A template fetcher to help initiliazing projects with boilerplate code / references / packages / libraries",
-	Long: `Ideal tool for standarized templates that can be stored and fetched from github, and other common repos.
-	Helps the team building microservices architecture to have templates in one place.
-	Helps your personal projects that you are tired of copy and paste from somewhere else.`,
+	Use:   "tfetch",
+	Short: "Tool to place and fetch boilerplate / templates documents and repos",
+	Long:  `Tool to place and fetch boilerplate / templates documents and repos`,
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
