@@ -1,6 +1,8 @@
 package application
 
 import (
+	"path"
+
 	"github.com/guiln/boilerplate-cli/domain/adapters"
 	"github.com/guiln/boilerplate-cli/domain/models"
 )
@@ -33,11 +35,12 @@ func (fApp *FetcherApplication) Fetch(repoPath, folderPath string) *models.Boile
 	return nil
 }
 
-func (fApp *FetcherApplication) FetchDoc(path, localPath string) *models.BoilerplateError {
+func (fApp *FetcherApplication) FetchDoc(templatePath, localPath string) *models.BoilerplateError {
 	if localPath == "" {
-		localPath = path
+		fileName := path.Base(templatePath)
+		localPath = fileName
 	}
-	if err := fApp.options.TemplateFetcher.FetchDoc(path, localPath); err != nil {
+	if err := fApp.options.TemplateFetcher.FetchDoc(templatePath, localPath); err != nil {
 		return err
 	}
 	return nil
