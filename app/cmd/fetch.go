@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
+	"github.com/guiln/boilerplate-cli/domain/models"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
 
@@ -18,8 +19,8 @@ var fetchCmd = &cobra.Command{
 	Short: "fetches template",
 	Run: func(cmd *cobra.Command, args []string) {
 		if (repoTemplatePath == "" && docTemplatePath == "") || (repoTemplatePath != "" && docTemplatePath != "") {
-			fmt.Println("exactly only one flag from repo or doc should be specified")
-			os.Exit(1)
+			promptOptions()
+			return
 		}
 
 		if repoTemplatePath != "" {
@@ -33,6 +34,44 @@ var fetchCmd = &cobra.Command{
 		}
 
 	},
+}
+
+// promptOptions
+// this function is under test
+func promptOptions() {
+	templateRepo, err := fetcherApplication.GetLocalRepo()
+	if err != nil {
+		panic(err)
+	}
+
+	rootTemplateFolder := templateRepo.RootBoilerplateFolder
+	index, result, _ := promptSelectOptionsForFolder(rootTemplateFolder.Path, rootTemplateFolder.ChildBoilerplateFolders)
+
+	fmt.Printf("index: %d | path %s", index, result)
+}
+
+func promptSelectOptionsForFolder(rootFolderName string, folders []*models.BoilerplateFolder) (int, string, error) {
+	options := getPromptOptionsFromBoilerplateFolders(folders)
+
+	prompt := promptui.Select{
+		Label: rootFolderName,
+		Items: options,
+	}
+
+	index, result, errPrompt := prompt.Run()
+	if errPrompt != nil {
+		return -1, "", errPrompt
+	}
+
+	return index, result, nil
+}
+
+func getPromptOptionsFromBoilerplateFolders(folders []*models.BoilerplateFolder) []string {
+	var boilerplateOptions []string
+	for _, child := range folders {
+		boilerplateOptions = append(boilerplateOptions, child.Path)
+	}
+	return boilerplateOptions
 }
 
 func init() {
