@@ -8,7 +8,7 @@ import (
 
 // syncCmd represents the sync command
 var syncCmd = &cobra.Command{
-	Use:   "sync",
+	Use:   command_name_sync,
 	Short: "Sync local template repo with remote repo",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("starting sync...")
@@ -30,7 +30,8 @@ var syncCmd = &cobra.Command{
 		fmt.Println("local repo has been updated to:")
 		fmt.Println(strRepoRepresentation)
 
-		fmt.Printf("sync-ed successfully with remote repo at %s!\n", cfg.Repo)
+		fmt.Printf("sync-ed successfully with remote repo at %s!\n\n", cfg.Repo)
+		printFetchCommandFullExample()
 	},
 }
 

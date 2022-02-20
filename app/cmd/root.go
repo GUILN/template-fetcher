@@ -22,7 +22,7 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "tfetch",
+	Use:   command_name,
 	Short: "Tool to place and fetch boilerplate / templates documents and repos",
 	Long:  `Tool to place and fetch boilerplate / templates documents and repos`,
 }

@@ -7,7 +7,7 @@ import (
 )
 
 var listCmd = &cobra.Command{
-	Use:   "list",
+	Use:   command_name_list,
 	Short: "lists templates contained locally, to sync with remote repo use sync command",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("following templates are available:")
@@ -20,8 +20,8 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 		fmt.Println(strRepoRepresentation)
-		fmt.Println("\n\nto use following templates use fetch command with desired template path separated by / like:")
-		fmt.Println("tfetch --path=node/api/express-restful")
+		fmt.Println("----------------------------------------------------")
+		printFetchCommandFullExample()
 	},
 }
 

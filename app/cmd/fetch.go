@@ -14,7 +14,7 @@ var (
 )
 
 var fetchCmd = &cobra.Command{
-	Use:   "fetch",
+	Use:   command_name_fetch,
 	Short: "fetches template",
 	Run: func(cmd *cobra.Command, args []string) {
 		if (repoTemplatePath == "" && docTemplatePath == "") || (repoTemplatePath != "" && docTemplatePath != "") {
@@ -36,8 +36,8 @@ var fetchCmd = &cobra.Command{
 }
 
 func init() {
-	fetchCmd.PersistentFlags().StringVar(&repoTemplatePath, "repo", "", "template=[path/to/your/template_repo]")
-	fetchCmd.PersistentFlags().StringVar(&docTemplatePath, "doc", "", "doc=[path/to/your/template_doc]")
-	fetchCmd.PersistentFlags().StringVar(&localPathName, "name", "", "name=[path to dump template]")
+	fetchCmd.PersistentFlags().StringVar(&repoTemplatePath, arg_name_repo, "", "template=[path/to/your/template_repo]")
+	fetchCmd.PersistentFlags().StringVar(&docTemplatePath, arg_name_doc, "", "doc=[path/to/your/template_doc]")
+	fetchCmd.PersistentFlags().StringVar(&localPathName, arg_name_name, "", "name=[path to dump template]")
 	rootCmd.AddCommand(fetchCmd)
 }

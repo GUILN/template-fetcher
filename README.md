@@ -13,16 +13,16 @@ It assimilates in functionality to cli tools like `aws lambda new` which creates
 
 ```go
 // Sync with remote repo
-tfetcher sync 
+tfetch sync 
 // List available template
-tfetcher list 
+tfetch list 
 // Fetch and download template in current repo
-tfetcher fetch [path to template] 
+tfetch fetch [path to template repo or doc] 
 ```  
 
 ## How to configure:
 
 ```go
 // The git token will be encrypted and stored locally in ~/.template.fetcher.config file  
-tfetcher config --repo="[your repo name]" --repo-owner="[repo owner name]" --git-token="[your git token]"  
+tfetch config --repo="[your repo name]" --repo-owner="[repo owner name]" --git-token="[your git token]"  
 ```  
