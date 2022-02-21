@@ -19,7 +19,8 @@ var fetchCmd = &cobra.Command{
 	Short: "fetches template",
 	Run: func(cmd *cobra.Command, args []string) {
 		if (repoTemplatePath == "" && docTemplatePath == "") || (repoTemplatePath != "" && docTemplatePath != "") {
-			promptOptions()
+			selectedOption, _ := promptOptions()
+			fmt.Print(selectedOption)
 			return
 		}
 
@@ -37,21 +38,63 @@ var fetchCmd = &cobra.Command{
 }
 
 // promptOptions
-// this function is under test
-func promptOptions() {
+// this function returns the path mounted from prompt
+func promptOptions() (string, error) {
 	templateRepo, err := fetcherApplication.GetLocalRepo()
 	if err != nil {
 		panic(err)
 	}
 
-	rootTemplateFolder := templateRepo.RootBoilerplateFolder
-	index, result, _ := promptSelectOptionsForFolder(rootTemplateFolder.Path, rootTemplateFolder.ChildBoilerplateFolders)
+	currentTemplateFolder := templateRepo.RootBoilerplateFolder
+	var (
+		finalPath string = ""
+		pathType  string = ""
+	)
+	for (currentTemplateFolder.ChildTemplateDocuments != nil || currentTemplateFolder.ChildBoilerplateFolders != nil) && pathType == "" {
+		var (
+			index        int
+			promptResult string
+			err          error
+		)
 
-	fmt.Printf("index: %d | path %s", index, result)
+		if currentTemplateFolder.IsDocContainerFolder {
+			_, promptResult, err = promptSelectOptionsForDocs(currentTemplateFolder.Path, currentTemplateFolder.ChildTemplateDocuments)
+			pathType = "Document"
+		} else {
+			index, promptResult, err = promptSelectOptionsForFolder(currentTemplateFolder.Path, currentTemplateFolder.ChildBoilerplateFolders)
+			currentTemplateFolder = currentTemplateFolder.ChildBoilerplateFolders[index]
+			if currentTemplateFolder.IsRepoContainerFolder {
+				pathType = "Repo"
+			}
+		}
+
+		if err != nil {
+			return "", err
+		}
+		finalPath = promptResult
+	}
+
+	return finalPath, nil
 }
 
 func promptSelectOptionsForFolder(rootFolderName string, folders []*models.BoilerplateFolder) (int, string, error) {
 	options := getPromptOptionsFromBoilerplateFolders(folders)
+
+	prompt := promptui.Select{
+		Label: rootFolderName,
+		Items: options,
+	}
+
+	index, result, errPrompt := prompt.Run()
+	if errPrompt != nil {
+		return -1, "", errPrompt
+	}
+
+	return index, result, nil
+}
+
+func promptSelectOptionsForDocs(rootFolderName string, docs []*models.TemplateDocument) (int, string, error) {
+	options := getPromptOptionsFromBoilerplateDocs(docs)
 
 	prompt := promptui.Select{
 		Label: rootFolderName,
@@ -74,6 +117,13 @@ func getPromptOptionsFromBoilerplateFolders(folders []*models.BoilerplateFolder)
 	return boilerplateOptions
 }
 
+func getPromptOptionsFromBoilerplateDocs(docs []*models.TemplateDocument) []string {
+	var boilerplateOptions []string
+	for _, child := range docs {
+		boilerplateOptions = append(boilerplateOptions, child.Path)
+	}
+	return boilerplateOptions
+}
 func init() {
 	fetchCmd.PersistentFlags().StringVar(&repoTemplatePath, arg_name_repo, "", "template=[path/to/your/template_repo]")
 	fetchCmd.PersistentFlags().StringVar(&docTemplatePath, arg_name_doc, "", "doc=[path/to/your/template_doc]")
