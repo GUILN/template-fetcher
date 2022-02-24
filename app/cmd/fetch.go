@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/guiln/boilerplate-cli/domain/models"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -14,14 +12,29 @@ var (
 	localPathName    string
 )
 
+type templateType string
+
+const (
+	templateRepoType templateType = "Repo"
+	templateDocType  templateType = "Doc"
+)
+
 var fetchCmd = &cobra.Command{
 	Use:   command_name_fetch,
 	Short: "fetches template",
 	Run: func(cmd *cobra.Command, args []string) {
+		// If none or both repo and doc template path are provided
+		// Prompts the options for a interactive select
 		if (repoTemplatePath == "" && docTemplatePath == "") || (repoTemplatePath != "" && docTemplatePath != "") {
-			selectedOption, _ := promptOptions()
-			fmt.Print(selectedOption)
-			return
+			templatePath, tType, err := promptOptions()
+			if err != nil {
+				panic(err)
+			}
+			if tType == templateRepoType {
+				repoTemplatePath = templatePath
+			} else {
+				docTemplatePath = templatePath
+			}
 		}
 
 		if repoTemplatePath != "" {
@@ -33,13 +46,13 @@ var fetchCmd = &cobra.Command{
 				panic(err)
 			}
 		}
-
 	},
 }
 
 // promptOptions
 // this function returns the path mounted from prompt
-func promptOptions() (string, error) {
+// Return: (templatePath: str, templateType: templateType, error: error)
+func promptOptions() (string, templateType, error) {
 	templateRepo, err := fetcherApplication.GetLocalRepo()
 	if err != nil {
 		panic(err)
@@ -47,8 +60,8 @@ func promptOptions() (string, error) {
 
 	currentTemplateFolder := templateRepo.RootBoilerplateFolder
 	var (
-		finalPath string = ""
-		pathType  string = ""
+		finalPath string       = ""
+		pathType  templateType = ""
 	)
 	for (currentTemplateFolder.ChildTemplateDocuments != nil || currentTemplateFolder.ChildBoilerplateFolders != nil) && pathType == "" {
 		var (
@@ -59,22 +72,22 @@ func promptOptions() (string, error) {
 
 		if currentTemplateFolder.IsDocContainerFolder {
 			_, promptResult, err = promptSelectOptionsForDocs(currentTemplateFolder.Path, currentTemplateFolder.ChildTemplateDocuments)
-			pathType = "Document"
+			pathType = templateDocType
 		} else {
 			index, promptResult, err = promptSelectOptionsForFolder(currentTemplateFolder.Path, currentTemplateFolder.ChildBoilerplateFolders)
 			currentTemplateFolder = currentTemplateFolder.ChildBoilerplateFolders[index]
 			if currentTemplateFolder.IsRepoContainerFolder {
-				pathType = "Repo"
+				pathType = templateRepoType
 			}
 		}
 
 		if err != nil {
-			return "", err
+			return "", "", err
 		}
 		finalPath = promptResult
 	}
 
-	return finalPath, nil
+	return finalPath, pathType, nil
 }
 
 func promptSelectOptionsForFolder(rootFolderName string, folders []*models.BoilerplateFolder) (int, string, error) {
