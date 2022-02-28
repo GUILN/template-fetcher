@@ -1,4 +1,8 @@
-# Template Fetcher 
+# Template Fetcher
+
+- [x] CLI
+- [x] Working with github
+- [ ] Enough tests (more tests should be created)
 
 Template fetcher is a project that allows you to store your project templates in a shared repo and fetch then into your local folder when is needed. 
 
