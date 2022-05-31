@@ -1,0 +1,6 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory `/Users/guilhermeleonardonunes/go/src/github.com/guiln/template-fetcher'
+echo "Building Template Fetcher CLI" 
+go build -o bin/tfetch app/tfetch.go
+make: Leaving directory `/Users/guilhermeleonardonunes/go/src/github.com/guiln/template-fetcher'
+ 

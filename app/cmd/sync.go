@@ -28,10 +28,9 @@ var syncCmd = &cobra.Command{
 
 		fmt.Println("sync ended!")
 		fmt.Println("local repo has been updated to:")
-		fmt.Println(strRepoRepresentation)
+		printTemplates(strRepoRepresentation)
 
 		fmt.Printf("sync-ed successfully with remote repo at %s!\n\n", cfg.Repo)
-		printFetchCommandFullExample()
 	},
 }
 
