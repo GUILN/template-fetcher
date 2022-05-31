@@ -1,6 +1,10 @@
 package cmd
 
-import "github.com/fatih/color"
+import (
+	"fmt"
+
+	"github.com/fatih/color"
+)
 
 const separator = "----------------------------------------------------"
 
@@ -15,4 +19,9 @@ func printFetchCommandFullExample() {
 	color.Cyan(fetch_command_usage_text)
 	color.Cyan(fetch_command_usage_text_repo)
 	color.Cyan(fetch_command_usage_text_doc)
+}
+
+func printSyncedSuccessfully() {
+	color.Cyan("sync-ed successfully with remote repo at %s!\n\n", cfg.Repo)
+	fmt.Println("🍔🍟🍺🍺")
 }
