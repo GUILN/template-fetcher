@@ -1,2 +1,6 @@
 secrets/** 
 bin/** 
+
+# vscode
+./vscode/**
+.vscode/
