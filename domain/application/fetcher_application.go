@@ -3,8 +3,8 @@ package application
 import (
 	"path"
 
-	"github.com/guiln/boilerplate-cli/domain/adapters"
 	"github.com/guiln/boilerplate-cli/domain/models"
+	"github.com/guiln/boilerplate-cli/domain/ports"
 )
 
 type FetcherApplication struct {
@@ -59,7 +59,7 @@ func (fApp *FetcherApplication) Sync() *models.BoilerplateError {
 }
 
 type FetcherApplicationOptions struct {
-	RepoHandler           adapters.RepoHandler
-	ExternalRepoConnector adapters.ExternalRepoConnector
-	TemplateFetcher       adapters.TemplateFetcher
+	RepoHandler           ports.RepoHandler
+	ExternalRepoConnector ports.ExternalRepoConnector
+	TemplateFetcher       ports.TemplateFetcher
 }

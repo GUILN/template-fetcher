@@ -1,4 +1,4 @@
-package adapters
+package ports
 
 import "github.com/guiln/boilerplate-cli/domain/models"
 
