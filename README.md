@@ -22,8 +22,7 @@ tfetch sync
 tfetch list 
 // Fetch and download template in current repo
 tfetch fetch [path to template repo or doc] 
-```  
-
+```
 ## How to configure:
 
 ```go
